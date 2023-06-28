@@ -1,0 +1,82 @@
+Task-07:
+=====================================
+
+An investment in knowledge pays the best interest.
+
+– Benjamin Franklin
+
+Regret for the time wasted can become a power of good in the time that remains.
+
+– Arthur Brisbane
+
+Task:
+------
+We deployed a Nginx and PHPFPM based setup on Kubernetes cluster last week and it had been working fine. This morning one of the team members made a change somewhere which caused some issues, and it stopped working. Please look into the issue and fix it:
+
+The pod name is nginx-phpfpm and configmap name is nginx-config. Figure out the issue and fix the same.
+
+Once issue is fixed, copy /home/thor/index.php file from jump host into nginx-container under nginx document root and you should be able to access the website using Website button on top bar.
+
+Note: The kubectl utility on jump_host has been configured to work with the kubernetes cluster.
+
+Resolution:
+===========
+
+  - kubectl get deploy -A
+
+  -  kubectl get pods
+
+  * configmap configuration
+
+  - kubectl get configmap
+
+  - kubectl get configmap nginx-config -o wide 
+
+  -  kubectl get configmap nginx-config -o yaml
+
+  * Copy the index.php in document root path as per the configmap
+
+  - kubectl cp /home/thor/index.php nginx-phpfpm:/var/www/html -c nginx-container
+
+  
+  * The running pod document root mount path is not correct due to which we 
+     unable to copy file 
+
+  - kubectl get pod nginx-phpfpm -o yaml > /tmp/nginx.yaml
+
+  - vi /tmp/nginx.yaml
+
+  1-...
+   "volumeMounts":[{"mountPath":"/var/www/html","name":"shared-files"}]} ....
+
+  2-    f:subPath: {}
+              k:{"mountPath":"/var/www/html"}:
+                .: {}
+                f:mountPath: 
+
+  3- volumeMounts:
+    - mountPath: /usr/share/nginx/html    ====> /var/www/html
+      name: shared-files
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+
+  * Edit the yaml file and change document mount path /usr/share/nginx with /var/www at  3 locations
+
+  - /usr/share/nginx with /var/www
+
+  * kubectl replace -f /tmp/nginx.yaml --force
+
+  - kubectl get pods
+
+  - kubectl describe pod/nginx-phpfpm -n default
+
+
+  - kubectl cp /home/thor/index.php nginx-phpfpm:/var/www/html -c nginx-container
+
+
+  * To validate the task login on pod console and curl nginx port
+
+    - kubectl exec -it nginx-phpfpm -c nginx-container --/bin/bash
+
+    - curl http://localhost:8099
+
+

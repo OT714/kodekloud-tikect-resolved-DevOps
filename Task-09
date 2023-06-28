@@ -1,0 +1,84 @@
+Task-09: Create Cronjobs in Kubernetes
+=======================================
+
+In learning you will teach, and in teaching you will learn.
+
+– Phil Collins
+
+Task: 
+-------
+There are some jobs/tasks that need to be run regularly on different schedules. Currently the Nautilus DevOps team is working on developing some scripts that will be executed on different schedules, but for the time being the team is creating some cron jobs in Kubernetes cluster with some dummy commands (which will be replaced by original scripts later). Create a cronjob as per details given below:
+
+    Create a cronjob named nautilus.
+
+    Set schedule to */6 * * * *.
+
+    Container name should be cron-nautilus.
+
+    Use nginx image with latest tag only and remember to mention the tag i.e nginx:latest.
+
+    Run a dummy command echo Welcome to xfusioncorp!.
+
+    Ensure restart policy is OnFailure.
+
+Note: The kubectl utility on jump_host has been configured to work with the 
+
+
+Resolution:
+------------
+
+kubectl get pods
+
+kubectl get cronjob
+
+vi /tmp/cron.yml
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: nautilus
+spec:
+  schedule: "*/6 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: cron-nautilus
+              image: nginx:latest
+              command: 
+                - /bin/sh
+                - -c
+                - echo Welcome to xfusioncorp
+          restartPolicy: OnFailure
+
+
+- kubectl create -f /tmp/cron.yml
+
+- kubectl get cronjob
+
+- kubetcl get pods
+
+- kubectl logs <pods name>
+
+
+Cronjob explain:
+================
+
+The cronjob expression */6 * * * * * represents a scheduling pattern in cron notation. It indicates that the cronjob will run every 6 seconds.
+
+Breaking down the individual components of the expression:
+
+The first asterisk * represents the seconds field. In this case, it indicates that the cronjob will run for any value of seconds.
+
+The second asterisk * represents the minutes field. With */6, it means the cronjob will run every 6 minutes.
+
+The third asterisk * represents the hours field. It indicates that the cronjob will run for any value of hours.
+
+The fourth asterisk * represents the day of the month field. It indicates that the cronjob will run for any value of the day of the month.
+
+The fifth asterisk * represents the month field. It indicates that the cronjob will run for any value of the month.
+
+The sixth asterisk * represents the day of the week field. It indicates that the cronjob will run for any value of the day of the week.
+
+In summary, the cronjob */6 * * * * * will execute a command or script every 6 seconds, as it has a wildcard * for all other time-related fields.
